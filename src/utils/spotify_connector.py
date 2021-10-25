@@ -4,11 +4,7 @@ All functionalities related to spotify data loading
 
 import os
 import time
-import json
 import spotipy
-import requests
-import pandas as pd
-from tqdm import tqdm
 from spotipy.oauth2 import SpotifyClientCredentials
 
 # TODO CLEAN THIS
