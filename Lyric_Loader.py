@@ -17,17 +17,21 @@ class Lyric_Loader():
     def __init__(self): 
         self.track_count = 0 
         self.skipped_tracks = 0 
-        self.lyric_fields = {"tid", "lyrics"} 
+        self.lyric_fields = {"tid", "arid", "track", "artist", "lyrics"} 
         self.lyrics = [] 
         self.skipped_value_names = [] 
-    def process2(self, batch): 
-        for tid, artist, track in batch: 
+    def process(self, batch): 
+        for tid, arid, track, artist in batch: 
             try: 
                 song = genius.search_song(track, artist)
+                if not song: raise Exception 
                 lyrics = song.lyrics
+                if not lyrics: 
+                    artist = genius.search_artist(artist, max_songs=1, sort="title")
+                    lyrics = artist.song(track)
                 lyrics = re.sub(r'[\(\[].*?[\)\]]', '', lyrics)
                 lyrics = os.linesep.join([s for s in lyrics.splitlines() if s])
-                self.store_lyrics(tid, lyrics)
+                self.store_lyrics(tid, arid, track, artist, lyrics)
                 self.track_count += 1 
             except Exception as e: 
                 print("E: {}, A: {}, T: {}".format(e, artist, track)) 
@@ -35,71 +39,8 @@ class Lyric_Loader():
                 self.skipped_value_names.append((artist,track))
                 self.skipped_tracks += 1
         self.show_summary()    
-    def process(self, batch): 
-        for tid, artist, track in batch: 
-            try: 
-                artist, track = self.clean_text(artist, track)
-                request_string = self.prepare_request_string(artist, track)
-                print(request_string)
-                # lyrics = self.scrape_lyrics(request_string)
-                lyrics = self.scrape_song_lyrics(request_string)
-                print(lyrics[:10])
-                # lyrics = self.preprocessing(lyrics)
-                self.store_lyrics(tid, lyrics)
-                self.track_count += 1 
-            except Exception as e: 
-                print("E: {}, A: {}, T: {}".format(e, artist, track)) 
-                time.sleep(10)
-                self.skipped_value_names.append((artist,track))
-                self.skipped_tracks += 1
-        self.show_summary()   
-    def clean_text(self, artist, track): 
-        # print("A: {}, T: {}".format(artist, track))
-        artist, track = artist.lower(), track.lower()
-        artist, track = artist.split("(")[0], track.split("(")[0]
-        artist, track = artist.split(), track.split() 
-        artist, track = [re.sub("[^a-zA-Z]+", "", a) for a in artist], [re.sub("[^a-zA-Z]+", "", t) for t in track]
-        print("A: {}, T: {}".format(artist, track))
-        return artist, track
-    def prepare_request_string(self, artist, track): 
-        request_string = 'https://genius.com/' + artist[0] #.capitalize()
-        for a in artist[1:]: 
-            request_string += "-" + a
-        for t in track: 
-            request_string += "-" + t 
-        request_string += '-lyrics'
-        return request_string   
-    def scrape_song_lyrics(self, url):
-        page = requests.get(url)
-        html = BeautifulSoup(page.text, 'html.parser')
-        
-        lyrics = html.find('div', class_='lyrics')
-        print(lyrics)
-        lyrics = lyrics.get_text()
-        #remove identifiers like chorus, verse, etc
-        lyrics = re.sub(r'[\(\[].*?[\)\]]', '', lyrics)
-        #remove empty lines
-        lyrics = os.linesep.join([s for s in lyrics.splitlines() if s])         
-        return lyrics
-    def scrape_lyrics(self, request_string):
-        page = requests.get(request_string)
-        html = BeautifulSoup(page.text, 'html.parser')
-        lyrics = html.find('div', class_='lyrics').get_text()
-        # print(lyrics1.get_text())
-        # lyrics2 = html.find("div", class_="Lyrics__Container-sc-1ynbvzw-2 jgQsqn")
-        # print(lyrics2.get_text())
-        # if lyrics1:
-        #     lyrics = lyrics1.get_text()
-        # elif lyrics2:
-        #     lyrics = lyrics2.get_text()
-        # elif lyrics1 == lyrics2 == None:
-        #     lyrics = []
-        # else: return None 
-        return lyrics
-    def preprocessing(self, lyrics): 
-        return lyrics 
-    def store_lyrics(self, tid, lyrics): 
-        data = [tid, lyrics]
+    def store_lyrics(self, tid, arid, track, artist, lyrics): 
+        data = [tid, arid, track, artist, lyrics]
         self.lyrics.append(data)    
     def writer(self, path_save, init): 
         with open(path_save+"lyrics.csv", "a+") as f:
@@ -121,24 +62,35 @@ def chunks(l, n):
         yield l[i:i + n]
 
 def load_batches(track_path, artist_path): 
-        track_df = pd.read_csv(track_path, sep='\t').reset_index(drop=True)
-        artist_df = pd.read_csv(artist_path, sep='\t').reset_index(drop=True)
-        track = list(track_df['track_name'])
-        arid = list(track_df['arid']) 
-        tid = list(track_df['tid'])
-        artist = list(artist_df[artist_df['arid'].isin(arid)]['artist_name']) 
-        data = list(zip(tid, artist, track))
-        batches = list(chunks(data, 10))
-        l = Lyric_Loader()
-        init = True
-        for batch in tqdm(batches): 
-            l.process2(batch)
-            l.writer('/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/', init)
-            init = False 
-            break 
+        track_df = pd.read_csv(track_path, sep='\t')
+        artist_df = pd.read_csv(artist_path, sep='\t')
+        # track = list(track_df['track_name'])
+        # arid = list(track_df['arid']) 
+        # tid = list(track_df['tid'])
+        # artist = list(artist_df[artist_df['arid'].isin(arid)]['artist_name']) 
+
+        combo1 = track_df.set_index('arid').join(artist_df.set_index('arid'))
+        print(combo1[['artist_name', 'track_name']].head(20))
+        combo2 = track_df.join(artist_df.set_index('arid'), on='arid')
+        print(combo2[['arid', 'artist_name', 'track_name']].head(20))
+        # print(len(artist), len(track))
+         
+        # data = list(zip(tid, arid, track, artist))
+        # batches = list(chunks(data, 10))
+        # l = Lyric_Loader()
+        # init = True
+        # for batch in tqdm(batches): 
+        #     l.process(batch)
+        #     # l.writer('/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/', init)
+        #     init = False  
 
 track_path, artist_path = "/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/tracks.csv", "/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/artists.csv" 
 load_batches(track_path, artist_path)
+
+
+
+
+
 # track_df = pd.read_csv(track_path, sep='\t').reset_index(drop=True)
 # artist_df = pd.read_csv(artist_path, sep='\t').reset_index(drop=True)
 # track = list(track_df['track_name'])
