@@ -136,6 +136,7 @@ class JSON_Loader():
             if init: 
                 writer.writerow(self.artist_fields)
             writer.writerows(self.artists)
+            self.artists = [] 
             print ("artists.csv done")
 
         with open(path_save+"albums.csv", "a+") as f:
@@ -143,6 +144,7 @@ class JSON_Loader():
             if init: 
                 writer.writerow(self.album_fields)
             writer.writerows(self.albums)
+            self.albums = [] 
         print ("albums.csv done")
             
         with open(path_save+"train_interactions.csv", "a+") as f:
@@ -150,6 +152,7 @@ class JSON_Loader():
             if init: 
                 writer.writerow(self.interaction_fields)
             writer.writerows(self.interactions)
+            self.interactions = [] 
         print ("train_interactions.csv done")
 
         with open(path_save+"tracks.csv", "a+") as f:
@@ -157,6 +160,7 @@ class JSON_Loader():
             if init: 
                 writer.writerow(self.track_fields)
             writer.writerows(self.tracks)
+            self.tracks = [] 
         print ("tracks.csv done")
 
         with open(path_save+"train_playlists.csv", "a+") as f:
@@ -164,6 +168,7 @@ class JSON_Loader():
             if init: 
                 writer.writerow(self.playlist_fields)
             writer.writerows(self.playlists)
+            self.playlists = [] 
         print ("train_playlists.csv done")
 
 def chunks(l, n):
@@ -174,11 +179,12 @@ def batches(path):
     filenames = [f for f in sorted(os.listdir(path)) if (f.startswith("mpd.slice.") and f.endswith(".json"))]
     batches = list(chunks(filenames, 10))
     init = True 
-    for batch in batches:
-        l = JSON_Loader()
+    l = JSON_Loader()
+    for batch in tqdm(batches):
         l.process(path, filenames=batch)
         l.writer("/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/", init)
         init = False
+        
 
     # l = JSON_Loader()
     # l.process(path="/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_million_playlist_dataset/data/", filenames=["mpd.slice.0-999.json"])
