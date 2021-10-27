@@ -17,7 +17,6 @@ class JSON_Loader():
         self.interaction_fields = ['pid','tid','pos']
 
         self.interactions = []
-
         self.playlists = []
         self.tracks = []
         self.artists = []
@@ -31,7 +30,7 @@ class JSON_Loader():
         self.count_albums = 0
         self.dict_tracks = {}
         self.dict_artists = {}
-        self.dict_albums = {}        
+        self.dict_albums = {}               
     def process(self, path, filenames): 
         for filename in sorted(filenames):
             if filename.startswith("mpd.slice.") and filename.endswith(".json"):
