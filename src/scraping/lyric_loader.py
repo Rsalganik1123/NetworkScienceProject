@@ -49,7 +49,7 @@ class Lyric_Loader():
                 lyrics = re.sub(r'[\(\[].*?[\)\]]', '', lyrics)
                 regex = re.compile('[^a-zA-Z \n]')
                 lyrics = regex.sub('', lyrics)
-                # lyrics = os.linesep.join([s for s in lyrics.splitlines() if s])
+                #Preprocess here (before you store) with: self.preprocess_lyrics(lyrics)
                 self.store_lyrics(arid, track, artist, lyrics)
                 self.track_count += 1
             except Exception as e:
@@ -69,6 +69,9 @@ class Lyric_Loader():
         data = [arid, track, artist, lyrics]
         self.lyrics.append(data)
 
+    def preprocess_lyrics(self, lyrics): 
+        ####DO SOME PREPROCESSING
+        return lyrics 
     def writer(self, path_save, init):
         with open(path_save + "lyrics.csv", "a+") as f:
             writer = csv.writer(f, delimiter="\t", )
