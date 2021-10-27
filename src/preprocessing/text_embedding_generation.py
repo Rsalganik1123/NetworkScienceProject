@@ -5,16 +5,19 @@ import argparse
 from sentence_transformers import SentenceTransformer
 
 
-def generate_text_features(data_list, text_key, output_key='text_emb'):
+def generate_text_features(data_list, text_key, output_key='text_emb',
+                           model_type='distiluse-base-multilingual-cased-v1'):
     """
 
     :param data_list: list of dictionary with text key
     :param text_key: key name of the text entry to compute the embedding
     :param output_key:  key name to save the embedding
+    :param model_type: model type
     :return: updated data list
     """
 
-    model = SentenceTransformer('all-mpnet-base-v2')
+    # TODO include different models including BOW ...
+    model = SentenceTransformer(model_type)
 
     batches = list(chunks(data_list, 32))
     for batch in tqdm(batches):
