@@ -63,8 +63,18 @@ class Lyric_Loader():
         self.lyrics.append(data)
 
     def preprocess_lyrics(self, lyrics): 
-        ####DO SOME PREPROCESSING
-        return lyrics 
+        lyrics = lyrics.split('\n')
+        average = numpy.array([0] * 512)
+        model = SentenceTransformer('distiluse-base-multilingual-cased-v1')
+        counter = 0
+        for i in lyrics:
+            if i != '':
+                average = average + numpy.array(model.encode(i))
+                counter = counter + 1
+
+        emb = average / counter
+        return emb 
+    
     def writer(self, path_save, init):
         with open(path_save + "lyrics.csv", "a+") as f:
             writer = csv.writer(f, delimiter="\t", )
