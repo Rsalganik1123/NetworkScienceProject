@@ -26,6 +26,10 @@ class NotLyrical(Exception):
         self.message = message
         super().__init__(self.message)
 
+class WrongEntry(Exception): 
+    def __init__(self, message="Wrong song entry found"):
+        self.message = message
+        super().__init__(self.message)
 
 class Lyric_Loader():
     def __init__(self):
@@ -40,15 +44,16 @@ class Lyric_Loader():
             try:
                 track, artist = self.clean_text(track, artist)
                 song = genius.search_song(track, artist)
-                if not song: raise SongNotInDB()
                 lyrics = song.lyrics
-                if not lyrics:
-                    artist = genius.search_artist(artist, max_songs=1, sort="title")
-                    lyrics = artist.song(track)
-                if not lyrics: raise NotLyrical()
-                lyrics = re.sub(r'[\(\[].*?[\)\]]', '', lyrics)
-                regex = re.compile('[^a-zA-Z \n]')
-                lyrics = regex.sub('', lyrics)
+                _, gen_a = self.clean_text("", song.artist)
+                correct_lyric_scrape = gen_a.lower() == artist.lower()
+                print("GENIUS T: {}, GENIUS A: {}, CORRECT?: {}".format(song.title, gen_a, correct_lyric_scrape))
+                if not correct_lyric_scrape: 
+                    raise WrongEntry()
+                
+                # lyrics = re.sub(r'[\(\[].*?[\)\]]', '', lyrics)
+                # regex = re.compile('[^a-zA-Z \n]')
+                # lyrics = regex.sub('', lyrics)
                 #Preprocess here (before you store) with: self.preprocess_lyrics(lyrics)
                 self.store_lyrics(arid, track, artist, lyrics)
                 self.track_count += 1
@@ -60,7 +65,7 @@ class Lyric_Loader():
         self.show_summary()
 
     def clean_text(self, track, artist):
-        track, artist = track.split("(")[0], artist.split("(")
+        track, artist = track.split("(")[0], artist.split("(")[0]
         track = track.split("-")[0]
         track = track.lower()
         return track, artist
@@ -107,35 +112,34 @@ def load_batches(track_path, artist_path):
     init = True
     for batch in tqdm(batches):
         l.process(batch)
-        l.writer('/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/', init)
+        # l.writer('/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/', init)
         init = False
 
-    # track_path, artist_path = "/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/tracks.csv", "/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/artists.csv"
-
+track_path, artist_path = "/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/tracks.csv", "/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/artists.csv"
 
 # load_batches(track_path, artist_path)
 
 
-# track_df = pd.read_csv(track_path, sep='\t').reset_index(drop=True)
-# artist_df = pd.read_csv(artist_path, sep='\t').reset_index(drop=True)
-# track = list(track_df['track_name'])
-# arid = list(track_df['arid'])
-# artist = list(artist_df[artist_df['arid'].isin(arid)]['artist_name'])
-# data = list(zip(arid, artist, track))
-# l = Lyric_Loader()
-# url = 'https://genius.com/missy-elliott-lose-control-lyrics'
-# print(l.scrape_song_lyrics(url))
-# artist, track = l.preprocess_before_lyric_scrape(artist[0], track[0])
-# print(l.scrape_lyrics(artist, track))
 
-try:
-    track, artist = 'danse macabre', 'Camille Saint-Saëns'
-    song = genius.search_song(track, artist)
-except Exception as e:
-    print(e)
-    print("MESSAGE", e.errno)  # status code
-    print(e.args[0])  # status code
-    print(e.args[1])  # error message
+# l = Lyric_Loader()
+# tid, track, artist = 1, 'Symphony No. 7', 'Ludwig Van Beethoven'
+# batch = [(tid, track, artist)]
+# l.process(batch)
+
+# try:
+#     track, artist = 'Symphony No. 7', 'Ludwig Van Beethoven'
+#     artist = genius.search_artist(artist, max_songs=1, sort="title")
+#     print(artist)
+#     lyrics = artist.song(track).lyrics
+#     print(lyrics[:50])
+    
+#     # song = genius.search_song(track, artist)
+
+# except Exception as e:
+#     print(e)
+#     print("MESSAGE", e.errno)  # status code
+#     print(e.args[0])  # status code
+#     print(e.args[1])  # error message
 # except HTTPError as e:
 #     print(e.errno)    # status code
 #     print(e.args[0])  # status code
