@@ -124,3 +124,7 @@ def parse_args():
 def main():
     args = parse_args()
     generate_images_features_file(args.input_path, args.output_path)
+
+
+if __name__ == '__main__':
+    main()
