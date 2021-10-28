@@ -13,6 +13,8 @@ from requests.exceptions import HTTPError, Timeout
 from src.utils.utils import chunks
 token = 'XxjduohJNSubKbqL47-dEAO6nSDtWgawot7hwF5qyyemBKT7yb0EwIOiqHt84SSC'
 genius = Genius(token)
+import numpy 
+from sentence_transformer import SentenceTransformer 
 
 class WrongEntry(Exception): 
     def __init__(self, message="Wrong song entry found"):
