@@ -46,7 +46,7 @@ class SPOTIFY_Loader():
         print("**** Skipped {} tracks ****".format(self.skipped_tracks))
 
     def writer(self, path_save, init):
-        with open(path_save + "artist_features.csv", "a+") as f:
+        with open(path_save + "artist_features2.csv", "a+") as f:
             writer = csv.writer(f, delimiter="\t", )
             if init:
                 writer.writerow(self.artist_feature_fields)
@@ -69,15 +69,16 @@ def load_uris(data_path):
     df = pd.read_csv(data_path, sep='\t')
     artist_uri_list = list(df['artist_uri'])
     # tid_list = list(df['tid'])
-    uri_batches = list(chunks(artist_uri_list, 300))
+    uri_batches = list(chunks(artist_uri_list, 1000)) #300 
     # tid_batches = list(chunks(tid_list, 100))
+    #I think it errors after 39 calls 
     s = SPOTIFY_Loader()
-    init = True
-    for batch in tqdm(uri_batches):
+
+    init = False
+    for batch in tqdm(uri_batches[161+12:200]): #hopefully 120 will be done # come back to this
         s.process(batch)
         s.writer('/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/', init)
         init = False
-
 
 load_uris('/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/spotify_in_csv/artists.csv')
 
