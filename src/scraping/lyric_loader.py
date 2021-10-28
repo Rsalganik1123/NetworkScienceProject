@@ -10,7 +10,7 @@ from tqdm import tqdm
 import os
 from lyricsgenius import Genius
 from requests.exceptions import HTTPError, Timeout
-from src.utils.utils import chunks
+# from src.utils.utils import chunks
 token = 'XxjduohJNSubKbqL47-dEAO6nSDtWgawot7hwF5qyyemBKT7yb0EwIOiqHt84SSC'
 genius = Genius(token)
 import numpy 
@@ -35,7 +35,7 @@ class Lyric_Loader():
                 track, artist = self.clean_text(track, artist)
                 song = genius.search_song(track, artist)
                 lyrics = song.lyrics
-                _, gen_a = self.clean_text("", song.artist)
+                gen_t, gen_a = self.clean_text(song.title, song.artist)
                 correct_lyric_scrape = gen_a.lower() == artist.lower()
                 print("GENIUS T: {}, GENIUS A: {}, CORRECT?: {}".format(song.title, gen_a, correct_lyric_scrape))
                 if not correct_lyric_scrape: 
@@ -96,8 +96,18 @@ class Lyric_Loader():
         print("**** Loaded: {} tracks ****".format(self.track_count))
         print("**** Skipped {} tracks ****".format(self.skipped_tracks))
 
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
+
+
 def load_batches(track_path, artist_path, write_path):
+    
     track_df = pd.read_csv(track_path, sep='\t')
+    track_uris = sorted(list(track_df['track_uri'])) 
+    track_uri_chunk = track_uris[754097:754097*2]
+    track_df = track_df[track_df['track_uri'].isin(track_uri_chunk)]
     artist_df = pd.read_csv(artist_path, sep='\t')
     joined_df = track_df.join(artist_df.set_index('arid'), on='arid')
     track = list(joined_df['track_name'])
@@ -115,7 +125,7 @@ def load_batches(track_path, artist_path, write_path):
 path = '/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/'
 track_path, artist_path, write_path = path +"/spotify_in_csv/tracks.csv", path + "/spotify_in_csv/artists.csv", path + "spotify_in_csv/"
 
-# load_batches(track_path, artist_path, write_path)
+load_batches(track_path, artist_path, write_path)
 
 
 def tester(): 
