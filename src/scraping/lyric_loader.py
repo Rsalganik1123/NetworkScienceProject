@@ -33,7 +33,7 @@ class Lyric_Loader():
                 track, artist = self.clean_text(track, artist)
                 song = genius.search_song(track, artist)
                 lyrics = song.lyrics
-                _, gen_a = self.clean_text("", song.artist)
+                gen_t, gen_a = self.clean_text(song.title, song.artist)
                 correct_lyric_scrape = gen_a.lower() == artist.lower()
                 print("GENIUS T: {}, GENIUS A: {}, CORRECT?: {}".format(song.title, gen_a, correct_lyric_scrape))
                 if not correct_lyric_scrape: 
@@ -104,12 +104,10 @@ def load_batches(track_path, artist_path, write_path):
     data = list(zip(arid, track, artist))
     batches = list(chunks(data, 10))
     l = Lyric_Loader()
-    print(batches[0])
-    exit() 
     init = True
     for batch in tqdm(batches):
         l.process(batch)
-        l.writer(write_path, init)
+        # l.writer(write_path, init)
         init = False
 
 path = '/Users/rebeccasalganik/Documents/School/2021-2022/Network Science/Capstone/'
