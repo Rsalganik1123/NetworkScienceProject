@@ -14,7 +14,7 @@ from requests.exceptions import HTTPError, Timeout
 token = 'XxjduohJNSubKbqL47-dEAO6nSDtWgawot7hwF5qyyemBKT7yb0EwIOiqHt84SSC'
 genius = Genius(token)
 import numpy 
-from sentence_transformer import SentenceTransformer 
+from sentence_transformers import SentenceTransformer 
 
 class WrongEntry(Exception): 
     def __init__(self, message="Wrong song entry found"):
@@ -45,6 +45,7 @@ class Lyric_Loader():
                 # regex = re.compile('[^a-zA-Z \n]')
                 # lyrics = regex.sub('', lyrics)
                 #Preprocess here (before you store) with: self.preprocess_lyrics(lyrics)
+                lyrics = self.preprocess_lyrics(lyrics)
                 self.store_lyrics(arid, track, artist, gen_t, gen_a, correct_lyric_scrape, lyrics)
                 self.track_count += 1
             except Exception as e:
