@@ -2,6 +2,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn import Module
+from torch.utils.data import DataLoader, IterableDataset
+from dgl.sampling import node2vec_random_walk
 
 # Model node2vec
 class Node2vec(Module):
@@ -272,7 +274,7 @@ class Node2vecModel(object):
         for i in range(epochs):
             loss = self._train_step(self.model, loader, optimizer, self.device)
             print("epoch: ", i, " , Loss: ", loss)
-            if i == 3:
+            if i == 10:
                 return
             if self.eval_steps > 0:
                 if epochs % self.eval_steps == 0:

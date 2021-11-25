@@ -79,14 +79,14 @@ def old_way_to_get_training_playlists(g):
     return g, pos_edges, neg_edges
 
 def train_embeddings(g):
-    model = Node2vecModel(g, embedding_dim=64, walk_length=10, p=0.1, q=0.5)
+    model = Node2vecModel(g, embedding_dim=64, walk_length=10, p=1, q=1)
     print("model initiated")
-    model.train(epochs=100, batch_size=20)
+    model.train(epochs=10, batch_size=20)
     embeddings = model.embedding()
     print(embeddings)
 
-    #if stopped at 3
-    with open(directory + 'embeddings_3_epochs.pkl', 'wb') as f:
+
+    with open(directory + 'embeddings_10_epochs.pkl', 'wb') as f:
         pickle.dump(embeddings, f)
 
 
@@ -201,7 +201,11 @@ def main():
     #
     # train_indices = all_data['train_indices']
 
-
+    g, train_indices, etype, etype_rev = pickle.load(open('/Users/juju/Downloads/g_train_etype_etyperev.pkl', 'rb'))
+    train_g = g.edge_subgraph({etype: train_indices, etype_rev: train_indices})
+    embeddings = train_embeddings(train_g)
+    print(train_g)
+    return
     g= get_data()
     g, pos_edges, neg_edges = old_way_to_get_training_playlists(g)
     g = dgl.to_homogeneous(g)
