@@ -1,0 +1,118 @@
+DATASET:
+  DATA_PATH: ns_music_small_data_ming_20211125.p
+  INTERACTION_DF: df_playlist
+  ITEM: track
+  ITEM_DF: df_track
+  ITEM_FEATURES:
+  - - key
+    - CAT
+  - - tempo_5cat
+    - CAT
+  - - livness_5cat
+    - CAT
+  - - instrumentalness_3cat
+    - CAT
+  - - speechiness_10cat
+    - CAT
+  - - loudness_10cat
+    - CAT
+  - - acousticness_10cat
+    - CAT
+  - - music_continous_features
+    - VEC
+  - - genre_old_vec
+    - VEC
+  - - genres_vec
+    - VEC
+  ITEM_ID: tid
+  ITEM_USER_EDGE: contained_by
+  NAME: SPOTIFY_MUSIC
+  SAMPLER:
+    NEIGHBOR_SAMPLER:
+      DEFAULT_SAMPLER:
+        NUM_LAYERS: 2
+        NUM_NEIGHBORS: 3
+        NUM_RANDOM_WALKS: 10
+        RANDOM_WALK_LENGTH: 2
+        RANDOM_WALK_RESTART_PROB: 0.5
+      NAME: DEFAULT
+    NODES_SAMPLER:
+      BATCH_SIZE: 32
+      NAME: DEFAULT
+      PATH: ''
+  USER: playlist
+  USER_DF: df_playlist_info
+  USER_ID: pid
+  USER_ITEM_EDGE: contains
+FP16: false
+MODEL:
+  ARCH: PINSAGE
+  PINSAGE:
+    HIDDEN_SIZE: 64
+    LAYERS: 2
+    PROJECTION:
+      ADD: []
+      CONCAT:
+      - key
+      - tempo_5cat
+      - livness_5cat
+      - instrumentalness_3cat
+      - speechiness_10cat
+      - loudness_10cat
+      - acousticness_10cat
+      - music_continous_features
+      - genre_old_vec
+      - genres_vec
+      EMB:
+      - - key
+        - 16
+      - - tempo_5cat
+        - 8
+      - - livness_5cat
+        - 8
+      - - instrumentalness_3cat
+        - 4
+      - - speechiness_10cat
+        - 16
+      - - loudness_10cat
+        - 16
+      - - acousticness_10cat
+        - 16
+      FEATURES:
+      - key
+      - tempo_5cat
+      - livness_5cat
+      - instrumentalness_3cat
+      - speechiness_10cat
+      - loudness_10cat
+      - acousticness_10cat
+      - music_continous_features
+      - genre_old_vec
+      - genres_vec
+      NORMALIZE: true
+    REPRESENTATION_NORMALIZE: true
+    SCORER: DEFAULT
+    SCORER_BIAS: false
+OUTPUT_PATH: /home/NOBACKUP/mzhou3/599/test_run_8
+TRAIN:
+  BATCHES_PER_EPOCH: 10000
+  ENABLE: true
+  EPOCHS: 3
+  LOSS: RAW_MARGIN_LOSS
+  SOLVER:
+    BASE_LR: 3.0e-05
+    OPTIMIZING_METHOD: adam
+    SGD:
+      DAMPENING: 0.0
+      MOMENTUM: 0.9
+      NESTEROV: true
+    STEP_LRS:
+    - - 0
+      - 0.01
+    - - 1
+      - 0.001
+    - - 2
+      - 0.0001
+    - - 3
+      - 3.0e-05
+    WEIGHT_DECAY: 0
