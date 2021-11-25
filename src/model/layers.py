@@ -31,7 +31,8 @@ class LinearProjector(torch.nn.Module):
         self.concat_feature_types = cfg.MODEL.PINSAGE.PROJECTION.CONCAT
         self.all_features = cfg.MODEL.PINSAGE.PROJECTION.FEATURES
 
-        self.album_features = [x for x in self.all_features if x in ['album_img_emb', 'album_text_emb']]
+        self.album_features = []
+        # self.album_features = [x for x in self.all_features if x in ['album_img_emb', 'album_text_emb']]
         data = full_graph.nodes[cfg.DATASET.ITEM].data
 
         if len(self.album_features) > 0:
