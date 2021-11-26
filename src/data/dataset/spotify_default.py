@@ -13,9 +13,12 @@ def build_spotify_graphs(cfg):
     df_users = all_data[cfg_data.USER_DF]
     df_interactions = all_data[cfg_data.INTERACTION_DF]
     df_items = all_data[cfg_data.ITEM_DF]
-    train_indices = all_data['train_indices']
-    train_user_ids = all_data['train_user_ids']
     val_user_ids = all_data['val_user_ids']
+    val_indices = list(df_interaction[(df_interactions['pid'].isin(val_user_ids)) & (df_interactions['pos'] <= 10)].index)
+    train_indices = all_data['train_indices'] + val_indices
+    train_user_ids = all_data['train_user_ids']
+    
+    
     test_user_ids = all_data['test_user_ids']
     df_users = df_users.sort_values(cfg_data.USER_ID).reset_index(drop=True)
     df_items = df_items.sort_values(cfg_data.ITEM_ID).reset_index(drop=True)
