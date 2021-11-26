@@ -36,7 +36,7 @@ def focal_loss(pos_score, neg_score):
     labels = labels.cuda()
     BCE_loss = F.binary_cross_entropy_with_logits(scores, labels, reduction='none')
     alpha = torch.tensor([0.25, 1 - 0.25]).cuda()
-    at = alpha.gather(0, labels.data.view(-1))
+    at = alpha.gather(0, labels.data.long().view(-1))
     pt = torch.exp(-BCE_loss)
     F_loss = at * (1 - pt) ** 2 * BCE_loss
     return F_loss.mean()
